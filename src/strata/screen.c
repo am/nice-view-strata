@@ -141,7 +141,11 @@ static void output_update_cb(struct output_state output) {
 }
 
 static struct output_state output_get_state(const zmk_event_t *_eh) {
-#if LVGL_VERSION_MAJOR >= 9 /* ZMK main renamed it along with the move to LVGL 9 */
+/*
+ * ZMK renamed zmk_endpoints_selected() in the same change that added
+ * ZMK_ENDPOINT_NONE_COUNT (zmkfirmware/zmk#3140), so that macro marks the new API.
+ */
+#ifdef ZMK_ENDPOINT_NONE_COUNT
     struct zmk_endpoint_instance endpoint = zmk_endpoint_get_selected();
 #else
     struct zmk_endpoint_instance endpoint = zmk_endpoints_selected();
