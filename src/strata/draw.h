@@ -1,5 +1,5 @@
 /*
- * Simple vertical nice!view status screen: drawing.
+ * Strata, a vertical nice!view status screen: drawing.
  *
  * The screen is drawn as a 68x160 portrait image, one bit per pixel, straight
  * from bitmap icons: nothing is scaled, rotated or smoothed on the

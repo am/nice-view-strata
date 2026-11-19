@@ -1,4 +1,4 @@
-# Icons for the simple vertical nice!view screen, one pixel per character:
+# Icons for the Strata nice!view screen, one pixel per character:
 # '#' is a lit pixel, '.' is background. Edit freely, then run
 #   python3 scripts/gen_assets.py
 # Each icon starts with "icon <name>" and may be any size.

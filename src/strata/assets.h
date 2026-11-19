@@ -1,5 +1,5 @@
 /*
- * Simple vertical nice!view status screen: 1-bit icons.
+ * Strata, a vertical nice!view status screen: 1-bit icons.
  * The data is generated; see scripts/gen_assets.py.
  */
 

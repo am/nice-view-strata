@@ -1,5 +1,5 @@
 /*
- * Simple vertical nice!view status screen: ZMK events and the screen itself.
+ * Strata, a vertical nice!view status screen: ZMK events and the screen itself.
  * Event handling follows ZMK's stock nice!view widget.
  *
  * The panel is 160x68 in landscape and sits upright on the keyboard, so the

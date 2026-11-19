@@ -1,9 +1,9 @@
 /*
- * Simple vertical nice!view status screen: drawing. See draw.h.
+ * Strata, a vertical nice!view status screen: drawing. See draw.h.
  *
  * Central half, top to bottom:
  *
- *   connection icon (USB / Bluetooth) and link status, inset from the edges
+ *   connection icon (USB / Bluetooth) and link status, in the top corners
  *   one circle per Bluetooth profile, the selected one filled
  *   one tile per keymap layer, stacked, the active one solid
  *   battery: five cells, or a bolt while charging
@@ -19,16 +19,15 @@
 #include "draw.h"
 
 #define OUTPUT_H 21
-#define OUTPUT_INSET 8
-#define ROW_OUTPUT 4
+#define OUTPUT_INSET 0
+#define ROW_OUTPUT 0
 #define ROW_PROFILES (ROW_OUTPUT + OUTPUT_H + 8)
-#define ROW_BATTERY (SV_HEIGHT - 10 - 12)
+#define ROW_BATTERY (SV_HEIGHT - 12)
 
 /* Width of the battery icon without its terminal. */
 #define BATTERY_BODY 25
 
 #define MAX_PROFILES 5
-#define PROFILE_GAP 3
 
 static void draw_bitmap(int x, int y, int width, int height, const uint8_t *data) {
     int stride = (width + 7) / 8;
@@ -93,7 +92,7 @@ static void draw_output(const struct sv_state *state) {
         return;
     }
 
-    /* Both sit inset from the edges, centred on the row. */
+    /* One in each top corner, centred on the row. */
     draw_icon(OUTPUT_INSET, ROW_OUTPUT + (OUTPUT_H - icon->height) / 2, icon);
     draw_icon(SV_WIDTH - OUTPUT_INSET - status->width,
               ROW_OUTPUT + (OUTPUT_H - status->height) / 2, status);
@@ -105,9 +104,12 @@ static void draw_profiles(const struct sv_state *state) {
         return;
     }
     int size = sv_icon_profile.width;
-    int x = (SV_WIDTH - (count * size + (count - 1) * PROFILE_GAP)) / 2;
+    /* Spread evenly over the full width: the first and last circles touch
+     * the sides. Five 8 px circles leave exact 7 px gaps. */
+    int span = SV_WIDTH - size;
 
-    for (int i = 0; i < count; i++, x += size + PROFILE_GAP) {
+    for (int i = 0; i < count; i++) {
+        int x = count > 1 ? i * span / (count - 1) : span / 2;
         draw_icon(x, ROW_PROFILES,
                   i == state->profile_index ? &sv_icon_profile_active : &sv_icon_profile);
     }
@@ -121,7 +123,7 @@ static void draw_profiles(const struct sv_state *state) {
  * Row i of a tile is 4 * (i + 1) pixels wide down to the middle, then narrows
  * again: TILE_N rows each way.
  */
-#define TILE_N 14
+#define TILE_N 17
 #define TILE_W (4 * TILE_N)
 #define TILE_H (2 * TILE_N)
 #define TILE_STEP 12
@@ -236,8 +238,8 @@ static void draw_battery(const struct sv_state *state) {
  *
  * Angles are 16-bit, 65536 to a turn; heights are in 1/64 pixel.
  */
-#define SWELL_TOP 42
-#define SWELL_BOTTOM 130 /* first row below the field */
+#define SWELL_TOP 28
+#define SWELL_BOTTOM 140 /* first row below the field */
 #define SWELL_STEP 8     /* rows between lines */
 #define SWELL_PHASES 8   /* lines until the shapes repeat */
 #define SWELL_FIRST (-2)
