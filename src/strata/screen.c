@@ -39,13 +39,33 @@ LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
 #define PANEL_W 160
 #define PANEL_H 68
 
-#define FOREGROUND                                                                                 \
-    (IS_ENABLED(CONFIG_NICE_VIEW_WIDGET_INVERTED) ? lv_color_white() : lv_color_black())
-#define BACKGROUND                                                                                 \
-    (IS_ENABLED(CONFIG_NICE_VIEW_WIDGET_INVERTED) ? lv_color_black() : lv_color_white())
-
 static lv_obj_t *canvas;
+
+#if LVGL_VERSION_MAJOR >= 9
+/*
+ * LVGL 9 (ZMK main): the canvas holds one byte per pixel (L8, the smallest
+ * format a canvas takes), 0x00 black and 0xFF white, rows LV_DRAW_BUF_STRIDE
+ * bytes (pixels) apart.
+ */
+#define CANVAS_FORMAT LV_COLOR_FORMAT_L8
+#define CANVAS_ROW LV_DRAW_BUF_STRIDE(PANEL_W, CANVAS_FORMAT) /* bytes = pixels in L8 */
+typedef uint8_t sv_pixel_t;
+#define WHITE 0xFF
+#define BLACK 0x00
+static uint8_t cbuf[LV_CANVAS_BUF_SIZE(PANEL_W, PANEL_H, LV_COLOR_FORMAT_GET_BPP(CANVAS_FORMAT),
+                                       LV_DRAW_BUF_STRIDE_ALIGN)] __aligned(LV_DRAW_BUF_ALIGN);
+#else
+/* LVGL 8 (ZMK v0.3): one lv_color_t per pixel, rows PANEL_W pixels apart. */
+#define CANVAS_FORMAT LV_IMG_CF_TRUE_COLOR
+#define CANVAS_ROW PANEL_W
+typedef lv_color_t sv_pixel_t;
+#define WHITE lv_color_white()
+#define BLACK lv_color_black()
 static lv_color_t cbuf[PANEL_W * PANEL_H];
+#endif
+
+#define FOREGROUND (IS_ENABLED(CONFIG_NICE_VIEW_WIDGET_INVERTED) ? WHITE : BLACK)
+#define BACKGROUND (IS_ENABLED(CONFIG_NICE_VIEW_WIDGET_INVERTED) ? BLACK : WHITE)
 
 static struct sv_state state = {.peripheral = !SV_CENTRAL};
 
@@ -53,16 +73,18 @@ void sv_px(int x, int y, bool on) {
     if (x < 0 || x >= SV_WIDTH || y < 0 || y >= SV_HEIGHT) {
         return;
     }
-    cbuf[x * PANEL_W + (PANEL_W - 1 - y)] = on ? FOREGROUND : BACKGROUND;
+    ((sv_pixel_t *)cbuf)[x * CANVAS_ROW + (PANEL_W - 1 - y)] =
+        on ? FOREGROUND : BACKGROUND;
 }
 
 static void redraw(void) {
     if (canvas == NULL) {
         return;
     }
-    lv_color_t background = BACKGROUND;
-    for (int i = 0; i < PANEL_W * PANEL_H; i++) {
-        cbuf[i] = background;
+    sv_pixel_t background = BACKGROUND;
+    sv_pixel_t *px = (sv_pixel_t *)cbuf;
+    for (size_t i = 0; i < sizeof(cbuf) / sizeof(sv_pixel_t); i++) {
+        px[i] = background;
     }
     sv_render(&state);
     lv_obj_invalidate(canvas);
@@ -119,7 +141,11 @@ static void output_update_cb(struct output_state output) {
 }
 
 static struct output_state output_get_state(const zmk_event_t *_eh) {
+#if LVGL_VERSION_MAJOR >= 9 /* ZMK main renamed it along with the move to LVGL 9 */
+    struct zmk_endpoint_instance endpoint = zmk_endpoint_get_selected();
+#else
     struct zmk_endpoint_instance endpoint = zmk_endpoints_selected();
+#endif
     struct output_state output = {.output = SV_OUTPUT_NONE};
 
     switch (endpoint.transport) {
@@ -128,6 +154,8 @@ static struct output_state output_get_state(const zmk_event_t *_eh) {
         break;
     case ZMK_TRANSPORT_BLE:
         output.output = SV_OUTPUT_BLE;
+        break;
+    default:
         break;
     }
 
@@ -247,7 +275,7 @@ lv_obj_t *zmk_display_status_screen() {
 
     canvas = lv_canvas_create(screen);
     lv_obj_align(canvas, LV_ALIGN_TOP_LEFT, 0, 0);
-    lv_canvas_set_buffer(canvas, cbuf, PANEL_W, PANEL_H, LV_IMG_CF_TRUE_COLOR);
+    lv_canvas_set_buffer(canvas, cbuf, PANEL_W, PANEL_H, CANVAS_FORMAT);
     redraw();
 
     sv_battery_init();
