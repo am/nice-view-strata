@@ -160,6 +160,14 @@ static struct output_state output_get_state(const zmk_event_t *_eh) {
         output.output = SV_OUTPUT_BLE;
         break;
     default:
+        /*
+         * ZMK main selects no endpoint while nothing is connected, where v0.3
+         * selected Bluetooth. Keep showing Bluetooth, so that the profile's
+         * disconnected and pairing icons still appear.
+         */
+        if (IS_ENABLED(CONFIG_ZMK_BLE)) {
+            output.output = SV_OUTPUT_BLE;
+        }
         break;
     }
 
