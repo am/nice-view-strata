@@ -22,7 +22,7 @@ A peripheral half cannot know the layer, profile or output in ZMK, which is why 
 
 ## Requirements
 
-- ZMK **v0.3** (Zephyr 3.5, LVGL 8) or ZMK `main` (LVGL 9).
+- ZMK **v0.3** (Zephyr 3.5, LVGL 8) or ZMK `main` (LVGL 9), tested against `main` as of 2026-11-14 ([`4de3133`](https://github.com/zmkfirmware/zmk/commit/4de3133)).
 - A nice!view mounted upright (portrait, 68 x 160), using the stock `nice_view` shield.
 
 ## Install
