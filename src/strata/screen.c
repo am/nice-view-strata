@@ -73,8 +73,7 @@ void sv_px(int x, int y, bool on) {
     if (x < 0 || x >= SV_WIDTH || y < 0 || y >= SV_HEIGHT) {
         return;
     }
-    ((sv_pixel_t *)cbuf)[x * CANVAS_ROW + (PANEL_W - 1 - y)] =
-        on ? FOREGROUND : BACKGROUND;
+    ((sv_pixel_t *)cbuf)[x * CANVAS_ROW + (PANEL_W - 1 - y)] = on ? FOREGROUND : BACKGROUND;
 }
 
 static void redraw(void) {
