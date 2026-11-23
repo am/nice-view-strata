@@ -22,7 +22,14 @@ A peripheral half cannot know the layer, profile or output in ZMK, which is why 
 
 ## Requirements
 
-- ZMK **v0.3** (Zephyr 3.5, LVGL 8) or ZMK `main` (LVGL 9), tested against `main` as of 2026-11-14 ([`4de3133`](https://github.com/zmkfirmware/zmk/commit/4de3133)).
+- ZMK **v0.3** or ZMK `main`. Pick the Strata version that matches your ZMK version:
+
+  | Your ZMK version | Strata `revision` in `west.yml` |
+  | --- | --- |
+  | `v0.3` (Zephyr 3.5, LVGL 8) | `v0.3.0` |
+  | `main` (Zephyr 4.1, LVGL 9) | `main` |
+
+  Strata's `main` follows ZMK `main`, and was last tested against it as of 2026-11-14 ([`4de3133`](https://github.com/zmkfirmware/zmk/commit/4de3133)). Tags are named after the ZMK release they are for.
 - A nice!view mounted upright (portrait, 68 x 160), using the stock `nice_view` shield.
 
 ## Install
@@ -43,10 +50,12 @@ A peripheral half cannot know the layer, profile or output in ZMK, which is why 
          import: app/west.yml
        - name: nice-view-strata
          remote: am
-         revision: main
+         revision: v0.3.0
      self:
        path: config
    ```
+
+   On ZMK `main`, set both revisions to `main` instead.
 
 2. Keep the stock `nice_view` shield in `build.yaml`:
 
@@ -57,6 +66,8 @@ A peripheral half cannot know the layer, profile or output in ZMK, which is why 
      - board: nice_nano_v2
        shield: corne_right nice_view_adapter nice_view
    ```
+
+   On ZMK `main` the board is called `nice_nano//zmk`.
 
 3. In your keyboard's `.conf` file (for example `config/corne.conf`):
 
@@ -89,6 +100,14 @@ python3 scripts/gen_assets.py
 ```
 
 The drawing code in `src/strata/draw.c` is plain C with integer math only, so it also compiles on a computer for previews.
+
+## Contributors
+
+Thanks to everyone who has helped make Strata better:
+
+- [@vFones](https://github.com/vFones) (Vittorio Fones): support for ZMK `main` and LVGL 9.
+
+Contributions are welcome. Open an issue or a pull request, and say which keyboard and ZMK version you tested on.
 
 ## Licence
 
